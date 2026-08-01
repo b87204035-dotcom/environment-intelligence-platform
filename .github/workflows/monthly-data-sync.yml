@@ -12,26 +12,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Record sync attempt
-        run: |
-          mkdir -p data/sync
-          python - <<'PY'
-          import json
-          from datetime import datetime, timezone
-          from pathlib import Path
-          p=Path('data/sync/status.json')
-          data={
-            'minimum_frequency':'monthly',
-            'last_attempt_at':datetime.now(timezone.utc).isoformat(),
-            'status':'connector_pending',
-            'message':'排程已啟用；官方下載器與欄位驗證器將在下一開發批次接入。'
-          }
-          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
-          PY
-      - name: Commit status when changed
+        with:
+          ref: codex/m1-gis-platform-foundation
+      - name: Download and audit official datasets
+        env:
+          MOENV_CONTAMINATED_SITES_URL: ${{ secrets.MOENV_CONTAMINATED_SITES_URL }}
+          MOENV_CONTROL_ZONES_URL: ${{ secrets.MOENV_CONTROL_ZONES_URL }}
+          NLSC_PARCEL_ENDPOINT: ${{ secrets.NLSC_PARCEL_ENDPOINT }}
+        run: python scripts/sync_official_data.py
+      - name: Commit sync outputs when changed
+        if: always()
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
-          git add data/sync/status.json
-          git diff --cached --quiet || git commit -m "chore(data): record scheduled sync attempt"
-          git push
+          git add data/sync/status.json data/raw || true
+          git diff --cached --quiet || git commit -m "chore(data): synchronize official datasets"
+          git push origin HEAD:codex/m1-gis-platform-foundation

@@ -1,0 +1,38 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: eip
+      POSTGRES_USER: eip
+      POSTGRES_PASSWORD: eip
+    ports:
+      - "5432:5432"
+    volumes:
+      - eip_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U eip -d eip"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  api:
+    build: ./apps/api
+    environment:
+      DATABASE_URL: postgresql+psycopg://eip:eip@db:5432/eip
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    image: nginx:1.27-alpine
+    ports:
+      - "8080:80"
+    volumes:
+      - ./apps/web:/usr/share/nginx/html:ro
+    depends_on:
+      - api
+
+volumes:
+  eip_postgres:

@@ -14,4 +14,15 @@ jobs:
       - name: Build API
         run: docker compose build api
       - name: Python syntax check
-        run: python -m py_compile apps/api/app/main.py
+        run: |
+          python -m py_compile apps/api/app/main.py
+          python -m py_compile scripts/sync_official_data.py
+      - name: Install API test dependencies
+        run: pip install -r apps/api/requirements.txt
+      - name: Run API contract tests
+        working-directory: apps/api
+        run: pytest -q
+      - name: Validate data JSON files
+        run: |
+          python -m json.tool data/source_catalog.json >/dev/null
+          python -m json.tool data/regulations/articles_8_9_seed.json >/dev/null

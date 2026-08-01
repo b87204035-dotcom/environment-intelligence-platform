@@ -1,0 +1,299 @@
+openapi: 3.1.0
+info:
+  title: EICP API
+  version: 0.1.0
+  description: Environment Intelligence and Consulting Platform API. All factual outputs expose provenance and freshness metadata.
+servers:
+  - url: /api/v1
+security:
+  - bearerAuth: []
+tags:
+  - name: Geography
+  - name: Environment
+  - name: Sources
+  - name: Reports
+  - name: Projects
+  - name: Legal
+paths:
+  /health:
+    get:
+      security: []
+      responses:
+        '200': {description: Healthy}
+  /administrative-areas:
+    get:
+      tags: [Geography]
+      parameters:
+        - {name: parent_id, in: query, schema: {type: string, format: uuid}}
+        - {name: area_type, in: query, schema: {type: string, enum: [county, town, village]}}
+        - {name: q, in: query, schema: {type: string}}
+      responses:
+        '200':
+          description: Administrative areas
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PagedAdministrativeAreas'}
+  /administrative-areas/{area_id}/profile:
+    get:
+      tags: [Environment]
+      parameters:
+        - {$ref: '#/components/parameters/AreaId'}
+        - {name: from_year, in: query, schema: {type: integer}}
+        - {name: to_year, in: query, schema: {type: integer}}
+      responses:
+        '200':
+          description: Composed environmental profile
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EnvironmentalProfile'}
+  /administrative-areas/{area_id}/map-layers:
+    get:
+      tags: [Environment]
+      parameters:
+        - {$ref: '#/components/parameters/AreaId'}
+      responses:
+        '200':
+          description: Available GIS layers with source metadata
+  /sources:
+    get:
+      tags: [Sources]
+      parameters:
+        - {name: status, in: query, schema: {type: string, enum: [current, due, stale, unavailable]}}
+      responses:
+        '200': {description: Source registry}
+  /sources/{dataset_key}:
+    get:
+      tags: [Sources]
+      parameters:
+        - {name: dataset_key, in: path, required: true, schema: {type: string}}
+      responses:
+        '200': {description: Dataset metadata and freshness}
+  /projects:
+    get:
+      tags: [Projects]
+      responses:
+        '200': {description: Accessible projects}
+    post:
+      tags: [Projects]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ProjectCreate'}
+      responses:
+        '201': {description: Project created}
+  /projects/{project_id}/sites:
+    post:
+      tags: [Projects]
+      parameters:
+        - {$ref: '#/components/parameters/ProjectId'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ProjectSiteCreate'}
+      responses:
+        '201': {description: Site created}
+  /projects/{project_id}/field-observations:
+    post:
+      tags: [Projects]
+      parameters:
+        - {$ref: '#/components/parameters/ProjectId'}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/FieldObservationCreate'}
+      responses:
+        '201': {description: Observation saved}
+  /legal/evaluations:
+    post:
+      tags: [Legal]
+      description: Produces a traceable preliminary evaluation. Never represents final legal advice.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/LegalEvaluationRequest'}
+      responses:
+        '200':
+          description: Preliminary result with human-review flag
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LegalEvaluationResult'}
+  /reports:
+    post:
+      tags: [Reports]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/ReportCreate'}
+      responses:
+        '201': {description: Report created}
+  /reports/{report_id}/sections/{section_code}/generate:
+    post:
+      tags: [Reports]
+      parameters:
+        - {$ref: '#/components/parameters/ReportId'}
+        - {name: section_code, in: path, required: true, schema: {type: string}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/GenerateSectionRequest'}
+      responses:
+        '200':
+          description: Generated draft with evidence links and validation results
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/GeneratedSection'}
+  /reports/{report_id}/export:
+    post:
+      tags: [Reports]
+      parameters:
+        - {$ref: '#/components/parameters/ReportId'}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [format]
+              properties:
+                format: {type: string, enum: [docx, pdf, html, markdown]}
+      responses:
+        '202': {description: Export queued}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    AreaId: {name: area_id, in: path, required: true, schema: {type: string, format: uuid}}
+    ProjectId: {name: project_id, in: path, required: true, schema: {type: string, format: uuid}}
+    ReportId: {name: report_id, in: path, required: true, schema: {type: string, format: uuid}}
+  schemas:
+    Provenance:
+      type: object
+      required: [dataset_key, retrieved_at, freshness_status]
+      properties:
+        dataset_key: {type: string}
+        publisher: {type: string}
+        source_url: {type: string, format: uri}
+        published_at: {type: [string, 'null'], format: date-time}
+        retrieved_at: {type: string, format: date-time}
+        data_period: {type: [string, 'null']}
+        snapshot_id: {type: string, format: uuid}
+        freshness_status: {type: string, enum: [current, due, stale, unavailable]}
+        citation_apa7: {type: string}
+    AdministrativeArea:
+      type: object
+      required: [id, official_code, name_zh, area_type]
+      properties:
+        id: {type: string, format: uuid}
+        official_code: {type: string}
+        name_zh: {type: string}
+        name_en: {type: [string, 'null']}
+        area_type: {type: string}
+        area_km2: {type: [number, 'null']}
+        centroid: {$ref: '#/components/schemas/GeoJsonGeometry'}
+    PagedAdministrativeAreas:
+      type: object
+      properties:
+        items: {type: array, items: {$ref: '#/components/schemas/AdministrativeArea'}}
+        total: {type: integer}
+    GeoJsonGeometry:
+      type: object
+      additionalProperties: true
+    EnvironmentalSection:
+      type: object
+      required: [section_code, status, provenance]
+      properties:
+        section_code: {type: string}
+        status: {type: string, enum: [available, partial, unavailable, stale]}
+        summary: {type: [string, 'null']}
+        facts: {type: array, items: {type: object, additionalProperties: true}}
+        charts: {type: array, items: {type: object, additionalProperties: true}}
+        provenance: {type: array, items: {$ref: '#/components/schemas/Provenance'}}
+    EnvironmentalProfile:
+      type: object
+      required: [area, sections, generated_at]
+      properties:
+        area: {$ref: '#/components/schemas/AdministrativeArea'}
+        generated_at: {type: string, format: date-time}
+        sections: {type: array, items: {$ref: '#/components/schemas/EnvironmentalSection'}}
+    ProjectCreate:
+      type: object
+      required: [name]
+      properties:
+        project_no: {type: string}
+        name: {type: string}
+        client_name: {type: string}
+        due_at: {type: string, format: date}
+    ProjectSiteCreate:
+      type: object
+      required: [name]
+      properties:
+        name: {type: string}
+        address: {type: string}
+        cadastral_numbers: {type: array, items: {type: string}}
+        geometry: {$ref: '#/components/schemas/GeoJsonGeometry'}
+    FieldObservationCreate:
+      type: object
+      required: [observed_at, observation_type]
+      properties:
+        observed_at: {type: string, format: date-time}
+        observation_type: {type: string}
+        note: {type: string}
+        location: {$ref: '#/components/schemas/GeoJsonGeometry'}
+        accuracy_m: {type: number}
+        media_asset_ids: {type: array, items: {type: string, format: uuid}}
+    LegalEvaluationRequest:
+      type: object
+      required: [site]
+      properties:
+        site: {$ref: '#/components/schemas/ProjectSiteCreate'}
+        business_categories: {type: array, items: {type: string}}
+        transaction_type: {type: string}
+        known_site_statuses: {type: array, items: {type: string}}
+        evaluation_date: {type: string, format: date}
+    LegalEvaluationResult:
+      type: object
+      required: [result_status, human_review_required, rules_evaluated, provenance]
+      properties:
+        result_status: {type: string, enum: [likely_applicable, likely_not_applicable, insufficient_information]}
+        human_review_required: {type: boolean, const: true}
+        explanation: {type: string}
+        missing_information: {type: array, items: {type: string}}
+        rules_evaluated: {type: array, items: {type: string}}
+        provenance: {type: array, items: {$ref: '#/components/schemas/Provenance'}}
+    ReportCreate:
+      type: object
+      required: [report_type, title]
+      properties:
+        project_id: {type: string, format: uuid}
+        report_type: {type: string, enum: [local_environment, article_8_9, phase_i_esa, control_plan, remediation_plan, monitoring]}
+        title: {type: string}
+        citation_style: {type: string, default: APA7}
+    GenerateSectionRequest:
+      type: object
+      required: [target_characters]
+      properties:
+        target_characters: {type: integer, minimum: 100, maximum: 10000, default: 880}
+        tone: {type: string, enum: [technical_consultant, academic, concise, regulator_facing], default: technical_consultant}
+        additional_instructions: {type: string, maxLength: 2000}
+    GeneratedSection:
+      type: object
+      required: [content, actual_characters, citations, validation]
+      properties:
+        content: {type: string}
+        actual_characters: {type: integer}
+        citations: {type: array, items: {$ref: '#/components/schemas/Provenance'}}
+        validation:
+          type: object
+          properties:
+            unsupported_claim_count: {type: integer}
+            citation_coverage_pct: {type: number}
+            target_length_variance_pct: {type: number}
+            warnings: {type: array, items: {type: string}}

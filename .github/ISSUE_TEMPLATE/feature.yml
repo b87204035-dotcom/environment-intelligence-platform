@@ -1,0 +1,39 @@
+name: Feature
+about: Production feature implementation
+body:
+  - type: textarea
+    attributes:
+      label: Objective
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Requirements
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Data provenance and freshness
+      description: Identify source, snapshot, update and citation requirements.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Tests
+    validations:
+      required: true
+  - type: checkboxes
+    attributes:
+      label: Completion gate
+      options:
+        - label: No fabricated production data
+          required: true
+        - label: Authorization and audit considered
+          required: true
+        - label: Documentation updated
+          required: true

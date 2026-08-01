@@ -1,0 +1,133 @@
+version: 1
+required_fields:
+  - dataset_key
+  - publisher
+  - title
+  - official_landing_page
+  - acquisition_method
+  - expected_update_frequency
+  - expected_max_age_days
+  - license
+  - citation
+  - spatial_scope
+  - temporal_scope
+  - owner
+  - validation_rules
+status_values: [candidate, approved, active, paused, retired]
+acquisition_methods: [api, file_download, ogc_service, manual_review]
+record_template:
+  dataset_key: unique.machine.key
+  status: candidate
+  publisher:
+    official_name: ''
+    organization_type: government
+  title: ''
+  description: ''
+  official_landing_page: ''
+  endpoint_or_download_page: ''
+  acquisition_method: api
+  authentication: none
+  expected_update_frequency: monthly
+  expected_max_age_days: 31
+  schedule: '0 2 1 * *'
+  timezone: Asia/Taipei
+  license:
+    name: ''
+    url: ''
+    commercial_use_allowed: unknown
+    attribution_required: true
+  citation:
+    style: APA7
+    organization_author: ''
+    dataset_title: ''
+    date_strategy: published_or_nd
+    retrieval_date_required: true
+  spatial_scope: Taiwan
+  temporal_scope: ''
+  geometry_type: null
+  primary_keys: []
+  source_fields: []
+  canonical_field_mapping: {}
+  validation_rules:
+    - checksum_required
+    - schema_compatible
+    - row_count_anomaly_check
+    - required_fields_non_null
+  publication_policy:
+    immutable_raw_snapshot: true
+    require_validation_pass: true
+    keep_previous_on_failure: true
+  owner:
+    product_owner: environmental_data
+    technical_owner: data_engineering
+  notes: ''
+
+candidate_catalog:
+  - dataset_key: admin.boundaries
+    topic: geography
+    purpose: county/town/village hierarchy and geometry
+    minimum_frequency: monthly_check
+  - dataset_key: population.monthly
+    topic: population
+    purpose: ten-year town/village population statistics
+    minimum_frequency: monthly
+  - dataset_key: climate.observations
+    topic: climate
+    purpose: temperature, rainfall, humidity, wind and station metadata
+    minimum_frequency: monthly_or_better
+  - dataset_key: geology.maps
+    topic: geology
+    purpose: geology units, structures and explanatory materials
+    minimum_frequency: monthly_check_for_revision
+  - dataset_key: soil.maps
+    topic: soil
+    purpose: soil series, taxonomy and mapped properties
+    minimum_frequency: monthly_check_for_revision
+  - dataset_key: soil.background
+    topic: soil_background
+    purpose: traceable background concentration studies and datasets
+    minimum_frequency: monthly_check_for_revision
+  - dataset_key: surface_water.features
+    topic: hydrology
+    purpose: rivers, drains, catchments, reservoirs and ponds
+    minimum_frequency: monthly_check
+  - dataset_key: groundwater.monitoring
+    topic: groundwater
+    purpose: stations, levels and quality observations
+    minimum_frequency: monthly
+  - dataset_key: hydrogeology.maps
+    topic: hydrogeology
+    purpose: groundwater regions, aquifers and hydrogeological units
+    minimum_frequency: monthly_check_for_revision
+  - dataset_key: contaminated_sites.official
+    topic: contaminated_sites
+    purpose: official site status, pollutants, announcements and delisting
+    minimum_frequency: monthly_or_better
+  - dataset_key: announced_business.official
+    topic: article_8_9
+    purpose: effective announced-business categories and required analyses
+    minimum_frequency: monthly_check
+  - dataset_key: sensitive_areas
+    topic: environmental_sensitivity
+    purpose: protected and sensitive-area layers with legal bases
+    minimum_frequency: monthly_check
+  - dataset_key: land_use
+    topic: land_use
+    purpose: current and historical land-use context
+    minimum_frequency: monthly_check
+  - dataset_key: legal.documents
+    topic: law
+    purpose: laws, regulations, announcements, guidance and forms
+    minimum_frequency: monthly_check
+
+onboarding_gate:
+  - official source identity verified
+  - terms and license reviewed
+  - field mapping approved by domain owner
+  - update behavior measured, not assumed
+  - sample snapshot archived
+  - APA citation tested
+  - spatial validity tested when applicable
+  - stale and failure behavior tested
+  - personal or restricted data review completed
+  - source added to monitoring dashboard

@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>土壤及地下水智慧調查平台</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css">
+  <style>
+    *{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#eef2f4;color:#172126}header{height:68px;padding:12px 18px;background:#132a30;color:white;display:flex;justify-content:space-between;align-items:center}header h1{margin:0;font-size:20px}main{height:calc(100vh - 68px);display:grid;grid-template-columns:340px 1fr 330px;gap:10px;padding:10px}.panel{background:white;border-radius:12px;padding:14px;overflow:auto;box-shadow:0 2px 12px #0001}.map{border-radius:12px;overflow:hidden;position:relative}#map{height:100%}h2{font-size:16px;margin:14px 0 8px}label{display:block;font-size:13px;margin-top:8px}input,select,textarea,button{width:100%;padding:10px;margin-top:5px;border:1px solid #ccd5d8;border-radius:8px}button{background:#176b68;color:white;border:0;font-weight:700}.tabs{display:flex;gap:6px}.tabs button{background:#e7efef;color:#17393a}.tabs button.active{background:#176b68;color:white}.tab{display:none}.tab.active{display:block}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}.status{padding:10px;border-radius:8px;background:#eef4f3;margin-top:8px;font-size:13px}.warning{background:#fff4d6}.result{padding:12px;background:#f5f8f8;border-radius:10px}.metric{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.metric div{background:#f1f5f5;padding:10px;text-align:center;border-radius:8px}.toolbar{position:absolute;z-index:800;left:12px;bottom:12px;display:flex;gap:6px}.toolbar button{width:auto}.small{font-size:12px;color:#65757a}@media(max-width:900px){main{grid-template-columns:1fr;height:auto}.map{height:62vh}.panel{max-height:none}}
+  </style>
+</head>
+<body>
+<header><h1>土壤及地下水智慧調查平台</h1><span id="apiStatus">API 檢查中</span></header>
+<main>
+  <aside class="panel">
+    <h2>查詢定位</h2>
+    <div class="tabs"><button class="active" data-tab="address">地址</button><button data-tab="parcel">地號</button><button data-tab="gps">GPS</button></div>
+    <div id="address" class="tab active"><label>完整地址</label><input id="addressInput" placeholder="輸入完整地址"><button id="addressBtn">地址定位</button></div>
+    <div id="parcel" class="tab"><div class="grid2"><input id="county" placeholder="縣市"><input id="district" placeholder="鄉鎮市區"><input id="section" placeholder="地段"><input id="parcelNo" placeholder="地號"></div><button id="parcelBtn">地號查詢</button></div>
+    <div id="gps" class="tab"><button id="gpsBtn">使用所在地 GPS</button></div>
+    <h2>圖層</h2>
+    <label><input type="checkbox" id="photoLayer"> 航照／正射影像</label>
+    <label><input type="checkbox" id="cadastralLayer" checked> 地籍圖套繪</label>
+    <label><input type="checkbox" id="sitesLayer" checked> 污染場址</label>
+    <h2>資料同步</h2><div id="syncStatus" class="status">至少每月同步一次；等待正式同步器回報。</div>
+  </aside>
+  <section class="map"><div id="map"></div><div class="toolbar"><button id="centerBtn">設為查詢中心</button><button id="sampleBtn">新增採樣點</button><button id="photoBtn">新增照片位置</button></div></section>
+  <aside class="panel">
+    <h2>查詢結果</h2><div class="result"><strong id="queryTitle">尚未查詢</strong><div id="queryCoords" class="small">--</div></div>
+    <h2>第 8、9 條公告事業初判</h2><input id="business" placeholder="事業／工廠名稱"><textarea id="keywords" placeholder="製程、業別、化學品"></textarea><button id="assessBtn">執行初判</button><div id="assessment" class="status">尚未分析</div>
+    <h2>現勘與採樣</h2><div class="metric"><div><b id="sampleCount">0</b><br><span class="small">採樣點</span></div><div><b id="photoCount">0</b><br><span class="small">照片點</span></div><div><b id="shapeCount">0</b><br><span class="small">圖形</span></div></div>
+    <button id="exportBtn">匯出 GeoJSON</button>
+  </aside>
+</main>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script><script src="app.js"></script>
+</body></html>

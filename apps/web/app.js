@@ -1,4 +1,4 @@
-const API = `${location.protocol}//${location.hostname}:8000`;
+const API = window.EIP_API_URL || `${location.protocol}//${location.hostname}:8000`;
 const map = L.map('map').setView([23.7,120.95],7);
 const base = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:20,attribution:'© OpenStreetMap'}).addTo(map);
 const photo = L.tileLayer('https://wmts.nlsc.gov.tw/wmts/PHOTO2/default/GoogleMapsCompatible/{z}/{y}/{x}',{maxZoom:20,opacity:.95});
@@ -25,6 +25,17 @@ async function geocode(address){
   const r=await fetch(url,{headers:{'Accept-Language':'zh-TW'}}); const rows=await r.json();
   if(!rows.length) throw new Error('找不到地址'); return {lat:+rows[0].lat,lng:+rows[0].lon,label:rows[0].display_name};
 }
+function listText(items){return Array.isArray(items)&&items.length?items.join('、'):'尚無資料';}
+async function loadSyncStatus(){
+  const box=document.querySelector('#syncStatus');
+  try{
+    const r=await fetch(`${API}/v1/data-sources`); if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d=await r.json(); const rows=d.sources||[];
+    if(!rows.length){box.className='status warning';box.textContent='尚未產生同步紀錄；排程已設定為每月 1 日及 15 日。';return;}
+    box.className='status';
+    box.innerHTML=rows.map(x=>`<b>${x.name||x.id}</b><br>狀態：${x.status||'未知'}<br>本站同步：${x.finished_at||x.last_attempt_at||'尚無'}<br>官方更新：${x.official_last_modified||'未提供'}`).join('<hr>');
+  }catch(e){box.className='status warning';box.textContent=`同步狀態尚未連線：${e.message}`;}
+}
 
 document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.tabs button').forEach(x=>x.classList.remove('active'));
@@ -47,12 +58,14 @@ document.querySelector('#sampleBtn').onclick=()=>{const c=map.getCenter();const 
 document.querySelector('#photoBtn').onclick=()=>{const c=map.getCenter();photos.addLayer(L.circleMarker(c,{radius:7}).bindPopup('現勘照片位置'));updateCounts();};
 document.querySelector('#assessBtn').onclick=async()=>{
   const terms=keywords.value.split(/[、,，\n]/).map(x=>x.trim()).filter(Boolean);
-  const r=await fetch(`${API}/v1/regulations/articles-8-9/assess`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({business_name:business.value,industry_keywords:terms,processes:[],chemicals:[]})});
-  const d=await r.json(); document.querySelector('#assessment').innerHTML=`判定：${d.classification}<br>第8條：${d.article_8}<br>第9條：${d.article_9}<br><small>${d.legal_disclaimer}</small>`;
+  const r=await fetch(`${API}/v1/regulations/articles-8-9/assess`,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({business_name:business.value,industry_keywords:terms,processes:terms,chemicals:terms})});
+  const d=await r.json();
+  document.querySelector('#assessment').innerHTML=`<b>判定：${d.classification}</b><br>第8條：${d.article_8}<br>第9條：${d.article_9}<br>符合規則：${listText((d.matches||[]).map(x=>x.industry_name||x.name))}<br>潛勢污染物：${listText(d.potential_pollutants)}<br>建議分析：${listText(d.recommended_analysis)}<br><small>${d.legal_disclaimer}</small>`;
 };
 document.querySelector('#exportBtn').onclick=()=>{
   const collection={type:'FeatureCollection',features:[...drawn.getLayers(),...samples.getLayers(),...photos.getLayers()].map(l=>l.toGeoJSON())};
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(collection,null,2)],{type:'application/geo+json'}));a.download='eip-field-plan.geojson';a.click();URL.revokeObjectURL(a.href);
 };
 fetch(`${API}/health`).then(r=>r.json()).then(()=>apiStatus.textContent='API 正常').catch(()=>apiStatus.textContent='API 尚未連線');
+loadSyncStatus();
 updateCounts();

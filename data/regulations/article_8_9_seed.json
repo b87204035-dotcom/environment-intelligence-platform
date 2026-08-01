@@ -1,0 +1,43 @@
+{
+  "version": "0.1.0",
+  "status": "seed_under_legal_review",
+  "disclaimer": "本資料為系統規則種子，正式判定須依現行公告全文、實際製程及法定觸發事件確認。",
+  "industries": [
+    {
+      "code": "PETROLEUM_RETAIL",
+      "name": "加油站業",
+      "aliases": ["加油站", "汽油零售", "柴油零售"],
+      "potential_pollutants": ["TPH", "benzene", "toluene", "ethylbenzene", "xylenes", "MTBE"],
+      "recommended_media": ["soil", "groundwater", "soil_gas"],
+      "field_screening": ["PID", "oil-water interface meter"],
+      "evidence_required": ["地下儲槽及管線配置", "油品種類", "洩漏紀錄", "土地移轉或停歇業事件"]
+    },
+    {
+      "code": "METAL_PLATING",
+      "name": "金屬表面處理及電鍍業",
+      "aliases": ["電鍍", "酸洗", "表面處理", "陽極處理"],
+      "potential_pollutants": ["chromium", "hexavalent_chromium", "nickel", "copper", "zinc", "cadmium", "cyanide"],
+      "recommended_media": ["soil", "groundwater"],
+      "field_screening": ["XRF", "pH", "EC"],
+      "evidence_required": ["鍍種及藥液", "槽體與廢水處理設施", "污泥暫存區", "實際製程"]
+    },
+    {
+      "code": "DRY_CLEANING",
+      "name": "乾洗業",
+      "aliases": ["乾洗", "洗衣工廠"],
+      "potential_pollutants": ["PCE", "TCE", "cis-1,2-DCE", "vinyl_chloride"],
+      "recommended_media": ["soil", "groundwater", "soil_gas"],
+      "field_screening": ["PID"],
+      "evidence_required": ["乾洗溶劑種類", "機台與廢液位置", "營業期間", "洩漏或廢棄紀錄"]
+    },
+    {
+      "code": "PCB_ELECTRONICS",
+      "name": "印刷電路板及電子零組件製造",
+      "aliases": ["PCB", "印刷電路板", "電子零組件", "蝕刻"],
+      "potential_pollutants": ["copper", "lead", "nickel", "chromium", "VOCs", "cyanide"],
+      "recommended_media": ["soil", "groundwater"],
+      "field_screening": ["XRF", "PID", "pH"],
+      "evidence_required": ["蝕刻及電鍍製程", "化學品清單", "廢水系統", "廢液及污泥管理"]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+name: Monthly official data sync
+on:
+  schedule:
+    - cron: '15 18 1,15 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Record sync attempt
+        run: |
+          mkdir -p data/sync
+          python - <<'PY'
+          import json
+          from datetime import datetime, timezone
+          from pathlib import Path
+          p=Path('data/sync/status.json')
+          data={
+            'minimum_frequency':'monthly',
+            'last_attempt_at':datetime.now(timezone.utc).isoformat(),
+            'status':'connector_pending',
+            'message':'排程已啟用；官方下載器與欄位驗證器將在下一開發批次接入。'
+          }
+          p.write_text(json.dumps(data,ensure_ascii=False,indent=2)+'\n',encoding='utf-8')
+          PY
+      - name: Commit status when changed
+        run: |
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add data/sync/status.json
+          git diff --cached --quiet || git commit -m "chore(data): record scheduled sync attempt"
+          git push

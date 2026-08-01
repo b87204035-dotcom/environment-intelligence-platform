@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "minimum_sync_frequency": "monthly",
+  "sources": [
+    {
+      "id": "moenv_contaminated_sites",
+      "name": "環境部土壤及地下水污染場址基本資料",
+      "authority": "環境部",
+      "landing_page": "https://data.moenv.gov.tw/dataset/detail/EMS_S_07",
+      "download_url_env": "MOENV_CONTAMINATED_SITES_URL",
+      "file_extension": "csv",
+      "minimum_bytes": 100,
+      "enabled": true
+    },
+    {
+      "id": "moenv_control_zones",
+      "name": "環境部土壤及地下水污染管制區公告資料",
+      "authority": "環境部",
+      "landing_page": "https://data.moenv.gov.tw/dataset/detail/EMS_S_08",
+      "download_url_env": "MOENV_CONTROL_ZONES_URL",
+      "file_extension": "csv",
+      "minimum_bytes": 100,
+      "enabled": true
+    },
+    {
+      "id": "nlsc_parcel_connector",
+      "name": "國土測繪中心地號定位與宗地資料",
+      "authority": "內政部國土測繪中心",
+      "landing_page": "https://maps.nlsc.gov.tw/S09SOA/",
+      "download_url_env": "NLSC_PARCEL_ENDPOINT",
+      "file_extension": "json",
+      "minimum_bytes": 20,
+      "enabled": false,
+      "requires_application": true
+    }
+  ]
+}

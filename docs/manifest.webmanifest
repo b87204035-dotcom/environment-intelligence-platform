@@ -1,0 +1,11 @@
+{
+  "name": "環境智慧調查平台",
+  "short_name": "EIP 調查",
+  "description": "土壤及地下水案件、GIS、採樣與法規初判工作台",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#e9f0ef",
+  "theme_color": "#132a30"
+}

@@ -1,0 +1,39 @@
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-eip}
+      POSTGRES_USER: ${POSTGRES_USER:-eip}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-eip} -d ${POSTGRES_DB:-eip}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
+    restart: unless-stopped
+  api:
+    build: ./backend
+    environment:
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-eip}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-eip}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_MODEL: ${OPENAI_MODEL:-gpt-5-mini}
+      SOURCE_SNAPSHOT_DIR: /data/snapshots
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8000}
+    volumes:
+      - source-snapshots:/data/snapshots
+    ports:
+      - "8001:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+    restart: unless-stopped
+volumes:
+  postgres-data:
+  source-snapshots:

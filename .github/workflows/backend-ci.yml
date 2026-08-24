@@ -1,0 +1,32 @@
+name: Backend CI
+on:
+  pull_request:
+    paths: ['backend/**','scripts/**','compose.yaml','.github/workflows/backend-ci.yml']
+  push:
+    branches: [main]
+    paths: ['backend/**','scripts/**','compose.yaml','.github/workflows/backend-ci.yml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgis/postgis:16-3.4
+        env: {POSTGRES_DB: eip, POSTGRES_USER: eip, POSTGRES_PASSWORD: eip}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U eip" --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults: {run: {working-directory: backend}}
+    env:
+      DATABASE_URL: postgresql+psycopg://eip:eip@localhost:5432/eip
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12', cache: pip}
+      - run: pip install '.[test]'
+      - run: alembic upgrade head
+      - run: pytest -q
+      - run: alembic downgrade base
+      - run: python -m compileall -q app alembic
+      - run: docker build -t eip-api:test .
